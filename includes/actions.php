@@ -33,6 +33,10 @@ switch (strtolower($pa)) {
 			break;
 		}//END IF
 		
+		if ( substr($newCustom['FilePath'], -1) !== '/' ) {
+			$newCustom['FilePath'] .=	'/';
+		}//END IF
+		
 		if (file_exists( PC_PLUGIN_ARRAY_FILE )) {
 			require(PC_PLUGIN_ARRAY_FILE);
 		}//END IF
@@ -66,7 +70,6 @@ switch (strtolower($pa)) {
 															'Version' =>		$newCustom['Version']
 															);
 		$res =	pc_generate_array_file($infoArray);
-		
 		if ($res === false) {
 			$this->status =	0;
 			$this->error =		'generateFileFailed';
@@ -104,6 +107,8 @@ switch (strtolower($pa)) {
 			break;
 		}//END IF
 		
+		$version_holder =	$infoArray[$id][$index]['Version'];
+		
 		$infoArray[$id][$index]['Applied'] = true;
 		$infoArray[$id][$index]['Version'] = $plugins[ reset( explode('/', $infoArray[$id][$index]['FilePath']) ) ];
 		$res =	pc_generate_array_file($infoArray);
@@ -115,6 +120,19 @@ switch (strtolower($pa)) {
 		}//END IF
 		
 		//apply code changes here
+		$res =	pc_do_customization($infoArray[$id][$index], 'custom');
+		if ($res === false) {
+			$infoArray[$id][$index]['Applied'] =	false;
+			$infoArray[$id][$index]['Version'] =	$version_holder;
+			pc_generate_array_file($infoArray);
+			unset($version_holder);
+			break;
+		}//END IF
+		
+		$res =	pc_log_action($infoArray[$id][$index], 'Activate Customization');
+		if ($res === false) {
+			$this->error =		"actionLogFailed";
+		}//END IF
 		
 		break;
 	case	'reapply':
@@ -149,6 +167,7 @@ switch (strtolower($pa)) {
 			break;
 		}//END IF
 		
+		$version_holder =	$infoArray[$id][$index]['Version'];
 		$infoArray[$id][$index]['Version'] = $plugins[ reset( explode('/', $infoArray[$id][$index]['FilePath']) ) ];
 		$res =	pc_generate_array_file($infoArray);
 		
@@ -159,6 +178,19 @@ switch (strtolower($pa)) {
 		}//END IF
 		
 		//reapply code here
+		$res =	pc_do_customization($infoArray[$id][$index], 'custom');
+		if ($res === false) {
+			$infoArray[$id][$index]['Version'] =	$version_holder;
+			pc_generate_array_file($infoArray);
+			unset($version_holder);
+			break;
+		}//END IF
+		
+		$res =	pc_log_action($infoArray[$id][$index], 'Reapply Customization');
+		if ($res === false) {
+			$this->error =		"actionLogFailed";
+		}//END IF
+		
 		
 		break;
 	case	'unapply':
@@ -201,7 +233,23 @@ switch (strtolower($pa)) {
 			break;
 		}//END IF
 		
-		//unapply code changes here
+		//now if the version the customization was for is older then the current plugin version code is not applied to file so skip this
+		if (strcmp($infoArray[$id][$index]['Version'], $plugins[ reset( explode('/', $infoArray[$id][$index]['FilePath']) ) ]) >= 0) {
+			
+			//unapply code changes here
+			$res =	pc_do_customization($infoArray[$id][$index], 'original');
+			if ($res === false) {
+				$infoArray[$id][$index]['Applied'] =	true;
+				pc_generate_array_file($infoArray);
+				break;
+			}//END IF
+			
+		}//END IF
+		
+		$res =	pc_log_action($infoArray[$id][$index], 'Dectivate Customization');
+		if ($res === false) {
+			$this->error =		"actionLogFailed";
+		}//END IF
 		
 		break;
 	case	'remove':
@@ -235,9 +283,63 @@ switch (strtolower($pa)) {
 			break;
 		}//END IF
 		
-		unset($infoArray[$id][$index]);
+		$row =	$infoArray[$id][$index];
 		
-		echo_print_r($infoArray);
+		//remove and shift the array elements
+		$elCount =	count($infoArray[$id]);
+		for ($i = $index; $i < $elCount - 1; $i++) {
+			$infoArray[$id][$i] =	$infoArray[$id][$i+1];
+		}//END FOR LOOP
+		unset($infoArray[$id][$elCount-1]);
+		
+		
+		$res =	pc_generate_array_file($infoArray);
+		if ($res === false) {
+			$this->status =	0;
+			$this->error =		"generateFileFailed";
+			break;
+		}//END IF
+		
+		$res =	pc_log_action($row, 'Delete Customization');
+		if ($res === false) {
+			$this->error =		"actionLogFailed";
+		}//END IF
+		
+		break;
+	case	'resetdebugfiles':
+		if (! PC_DEBUG_MODE) {
+			wp_redirect( $this->page );
+			exit;
+			break;
+		}//END IF
+		
+		$infoArraySrcFile =	PC_PLUGIN_DIR . 'includes/infoArray.php';
+		$changedFiles =	glob(PC_PLUGIN_DIR . PC_PLUGIN_DEBUG_DIR . 'changedFiles/*');
+		//echo_print_r($changedFiles);
+		$res =	array();
+		
+		if (file_exists(PC_PLUGIN_ARRAY_FILE)) {
+			$res[] =	unlink(PC_PLUGIN_ARRAY_FILE);
+		}//END IF
+		if (file_exists(PC_PLUGIN_LOG_FILE)) {
+			$res[] =	unlink(PC_PLUGIN_LOG_FILE);
+		}//END IF
+		
+		$res[] =	copy($infoArraySrcFile, PC_PLUGIN_ARRAY_FILE);
+		foreach ($changedFiles as $filePath) {
+			if ($filePath == PC_PLUGIN_DIR . PC_PLUGIN_DEBUG_DIR . 'changedFiles/index.php') {
+				continue;
+			}//END IF
+			$res[] =	unlink($filePath);
+		}//END FOREACH LOOP
+		
+		foreach ($res as $status) {
+			if ($status === false) {
+				$this->status =	0;
+				$this->error =		"resetDebugFailed";
+				break;
+			}//END IF
+		}//END FOREACH LOOP
 		
 		break;
 }//END SWITCH

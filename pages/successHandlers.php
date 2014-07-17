@@ -35,6 +35,9 @@ $output =	'';
  */
 
 switch (strtolower($pa)) {
+	case	'newcustom':
+		$output =	"Successfully created your customization. However, it still needs to be activated to use it.";
+		break;
 	case	'apply':
 		$output =	"Successfully applied customization: " . $infoArray[$id][$index]['CustomName'];
 		break;
@@ -42,15 +45,28 @@ switch (strtolower($pa)) {
 		$output =	"Successfully reapplied customization: " . $infoArray[$id][$index]['CustomName'];
 		break;
 	case	'remove':
-		$output =	"Successfully remove customization: " . $infoArray[$id][$index]['CustomName'];
+		$output =	"Successfully removed customization";
 		break;
 	case	'unapply':
 		$output =	"Successfully unapplied customization: " . $infoArray[$id][$index]['CustomName'];
+		break;
+	case	'resetdebugfiles':
+		$output =	"Successfully reset the debug files.";
 		break;
 	default:
 		$output =	"We dont know what just succeeded but it did. But should it have?";
 		break;
 }//END SWITCH
+
+if ($this->error !== '') {
+	
+	switch (strtolower($this->error)) {
+		case	'actionlogfailed':
+			$output .=	"<br />Warning: Failed to create a log entry for this action.";
+			break;
+	}//END SWITCH
+	
+}//END IF
 
 if ($output === '') {
 	return;

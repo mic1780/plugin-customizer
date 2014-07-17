@@ -26,12 +26,16 @@ if ($status === 0) {
 	 *		alreadyApplied
 	 *		alreadyNotApplied
 	 *		cantRemoveApplied
+	 *		customizationFailed
 	 *		generateFileFailed
+	 *		invalidArgument
 	 *		invalidArrayID
 	 *		invalidArrayIndex
+	 *		invalidCustomization
 	 *		invalidPluginFolder
 	 *		missingActionFile
 	 *		missingVariables
+	 *		resetDebugFailed
 	 */
 	
 	switch (strtolower($error)) {
@@ -44,14 +48,23 @@ if ($status === 0) {
 		case	'cantremoveapplied':
 			$output =	"ERROR: You must deactivate your customization before you can remove it from the list of available customizations.";
 			break;
+		case	'customizationfailed':
+			$output =	"ERROR: Customization failed. This was caused because we were unable to overwrite the file.";
+			break;
 		case	'generatefilefailed':
 			$output =	"ERROR: Failed to make changes to the file holding your customizations. Please try again.";
+			break;
+		case	'invalidargument':
+			$output =	"ERROR: Action failed because an invalid arugment was passed to a function. Make sure everything is correct then try again.";
 			break;
 		case	'invalidarrayid':
 			$output =	"ERROR: Could not complete requested action. Invalid id parameter. Please provide a valid customization ID next time.";
 			break;
 		case	'invalidarrayindex':
 			$output =	"ERROR: Could not complete requested action. Invalid index parameter. Please provide a valid customization index next time.";
+			break;
+		case	'invalidcustomization':
+			$output =	"ERROR: Applying this customization did not change the file or left it entirly blank. File was left as is.";
 			break;
 		case	'invalidpluginfolder':
 			$output =	"ERROR: Tried to apply a customization to a plugin that does not exist.";
@@ -62,8 +75,11 @@ if ($status === 0) {
 		case	'missingvariables':
 			$output =	"ERROR: Some of the parameters required to complete your request are missing. Make sure you have everything you need and try again.";
 			break;
+		case	'resetdebugfailed':
+			$output =	"ERROR: Failed to reset debug files. One or more copy/unlink actions returned false.";
+			break;
 		default:
-			$output =	"An unknown error has occured. Sorry.";
+			$output =	"An unknown error has occured. Sorry. Error was: " . $error;
 			break;
 	}//END SWITCH
 	

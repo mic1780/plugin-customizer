@@ -6,9 +6,11 @@ if (! defined('PC_VERSION') ) {
 	exit;
 }//END IF
 
+global $nL;
+
 //all plugins w/ info arrays: $GLOBALS['wp_object_cache']->cache['plugins']['plugins']['']
 //this is so I can dev without worry of others looking in
-if (! isset($GLOBALS['wp_object_cache']->cache['userslugs']['mic1780']) ) {
+if (PC_DEBUG_MODE && isset($GLOBALS['wp_object_cache']->cache['userslugs']['mic1780']) === false ) {
 	wp_redirect( admin_url('admin.php') );
 	exit;
 }//END IF
@@ -28,32 +30,6 @@ if ( isset($pluginsArray) && count($pluginsArray) > 0 ) {
 
 $customizeRows =	'';
 
-/**
-if (! file_exists(PC_PLUGIN_ARRAY_FILE) ) {
-	$fname =	explode('/', PC_PLUGIN_ARRAY_FILE);
-	$fname =	$fname[count($fname) - 1];
-	//$fp =		fopen(PC_PLUGIN_ARRAY_FILE, 'w');
-	$txt =	'' .
-				"<?php\n" . $nL .
-				"//" . $fname . "\n" . $nL .
-				"//This file is generated and should not be changed by you. Thanks!\n" . $nL .
-				'$infoArray[0][] =	array(' . "\n" . $nL .
-				"'Applied' =>		true,\n" . $nL .
-				"'CustomName' =>	'MC4WP widget title',\n" . $nL .
-				"'FilePath' =>		'mailchimp-for-wp-pro/includes/',\n" . $nL .
-				"'FileName' =>		'class-widget.php',\n" . $nL .
-				'\'OldCode\' =>		\'' . str_replace("'", "\'", '$title = apply_filters( \'widget_title\', $instance[\'title\'] );') . '\',' . "\n" . $nL .
-				'\'NewCode\' =>		\'' . str_replace("'", "\'", '$title = (stripos($instance[\'title\'], \'<img\') === false ? apply_filters( \'widget_title\', $instance[\'title\'] ) : $instance[\'title\']);') . '\',' . "\n" . $nL .
-				"'Description' =>	'This allows Mailchimp to use image tags in widget titles.',\n" . $nL .
-				");\n" . $nL .
-				"?>" .
-				'';
-	//fwrite($fp, $txt);
-	//fclose($fp);
-	unset($txt);
-}//END IF
-/**/
-
 if (file_exists(PC_PLUGIN_ARRAY_FILE)) {
 	require(PC_PLUGIN_ARRAY_FILE);
 }//END IF
@@ -61,6 +37,7 @@ if (file_exists(PC_PLUGIN_ARRAY_FILE)) {
 if (isset($infoArray) && count($infoArray) > 0) {
 	add_stylesheet('PC_settings_styles', 'settings_styles.css');
 	foreach ($infoArray as $key => $changeArray) {
+		$tempFile =	file_get_contents(dirname(PC_PLUGIN_DIR) . '/' . $changeArray[0]['FilePath'] . $changeArray[0]['FileName']);
 		foreach ($changeArray as $index => $row) {
 			$plugin_version =	$plugins[reset( explode('/', $row['FilePath']) )];
 			//create rows for table
@@ -101,11 +78,24 @@ if (isset($infoArray) && count($infoArray) > 0) {
 										'</td>' . $nL .
 										'<td class="vt l maxTextareaCell">' . $nL .
 											htmlspecialchars(pc_format_code($row['Description'], 'read')) . $nL .
+										'</td>' . $nL .
+										'<td class="vt l maxTextareaCell">' . $nL .
 											($row['Applied'] === true && strcmp($row['Version'], $plugin_version) < 0 ?
-												'<br /><br />' .
 												'NOTICE: This customization is active but needs to be reapplied.<br />' .
 												'Applied version: ' . $row['Version'] . '<br />' .
 												'Plugin version: ' . $plugin_version .
+												'<br /><br />' .
+												'' : '') .
+											($row['Applied'] === true && substr_count($tempFile, $row['NewCode']) !== 1 ?
+												'NOTICE: Deactivating this customization will make ' . substr_count($tempFile, $row['NewCode']) . ' ' .
+												'changes to the file.' .
+												'<br /><br />' .
+												'' : '') .
+											($row['Applied'] === false && substr_count($tempFile, $row['OldCode']) !== 1 ?
+												'NOTICE: Activating this customization will make ' . substr_count($tempFile, $row['OldCode']) . ' ' .
+												'changes to the file. Please try to limit the number of changes per customization to one to ensure ' .
+												'that your customization is made only where you want it.' .
+												'<br /><br />' .
 												'' : '') .
 										'</td>' . $nL .
 									'</tr>' . $nL .
@@ -120,12 +110,15 @@ if (isset($infoArray) && count($infoArray) > 0) {
 	<?php require(PC_PLUGIN_ERROR_HANDLERS); ?>
 	<?php require(PC_PLUGIN_SUCCESS_HANDLERS); ?>
 	<h1>
-		Plugin Customizer
+		Plugin Customizer<?php if (PC_DEBUG_MODE) require(PC_PLUGIN_DIR . PC_PLUGIN_DEBUG_DIR . 'debug_heading.php'); ?>
 	</h1>
 	<hr>
 	<h2>
 		Available Customizations
 	</h2>
+	<h4>
+		Note: Deactivating this plugin will make customizations inactive until this plugin is reactivated.
+	</h4>
 	<table class="padCells">
 		<thead>
 			<tr>
@@ -136,6 +129,7 @@ if (isset($infoArray) && count($infoArray) > 0) {
 				<th>Original Code</th>
 				<th>Custom Code</th>
 				<th>Description</th>
+				<th>Plugin Info</th>
 			</tr>
 		</thead>
 		<tbody>
