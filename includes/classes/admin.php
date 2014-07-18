@@ -29,13 +29,19 @@ class PC_Admin {
 	
 	public function build_menu() {
 		$required_cap = apply_filters('pc_settings_cap', 'manage_options');
-		add_menu_page('Plugin Customizer', 'Plugin Customizer', $required_cap, 'plug-custom', array ($this, 'get_general_settings_page') );
+		add_menu_page('Plugin Customizer', 'Plugin Customizer', $required_cap, 'plug-custom', array ($this, 'get_customizer_page') );
+		
+		//add submenu pages
+		add_submenu_page('plug-custom', 'Customizer - Plugin Customizer', 'Customizer', $required_cap, 'plug-custom', array($this, 'get_customizer_page') );
+		add_submenu_page('plug-custom', 'Settings - Plugin Customizer', 'Settings', $required_cap, 'plug-custom-settings', array($this, 'get_settings_page') );
 	}//END FUNCTION
 	
-	public function get_general_settings_page() {
-		//$this->status =	1;
-		//$_POST['pa'] = 'thingsgotdoneright';
-		require( PC_PLUGIN_DIR . 'pages/general_settings.php' );
+	public function get_customizer_page() {
+		require( PC_PLUGIN_DIR . 'pages/customizer.php' );
+	}//END PUBLIC FUNCTION
+	
+	public function get_settings_page() {
+		require( PC_PLUGIN_DIR . 'pages/settings.php' );
 	}//END FUNCTION
 	
 	public function process_action() {

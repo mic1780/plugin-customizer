@@ -10,7 +10,7 @@ global $nL;
 
 //all plugins w/ info arrays: $GLOBALS['wp_object_cache']->cache['plugins']['plugins']['']
 //this is so I can dev without worry of others looking in
-if (PC_DEBUG_MODE && isset($GLOBALS['wp_object_cache']->cache['userslugs']['mic1780']) === false ) {
+if (PC_DEBUG_MODE && current_user_can('edit_plugins') === false ) {
 	wp_redirect( admin_url('admin.php') );
 	exit;
 }//END IF
@@ -37,7 +37,11 @@ if (file_exists(PC_PLUGIN_ARRAY_FILE)) {
 if (isset($infoArray) && count($infoArray) > 0) {
 	add_stylesheet('PC_settings_styles', 'settings_styles.css');
 	foreach ($infoArray as $key => $changeArray) {
-		$tempFile =	file_get_contents(dirname(PC_PLUGIN_DIR) . '/' . $changeArray[0]['FilePath'] . $changeArray[0]['FileName']);
+		if (PC_DEBUG_MODE && file_exists(PC_PLUGIN_DIR . PC_PLUGIN_DEBUG_DIR . 'changedFiles/' . $changeArray[0]['FileName'])) {
+			$tempFile =	file_get_contents(PC_PLUGIN_DIR . PC_PLUGIN_DEBUG_DIR . 'changedFiles/' . $changeArray[0]['FileName']);
+		} else {
+			$tempFile =	file_get_contents(dirname(PC_PLUGIN_DIR) . '/' . $changeArray[0]['FilePath'] . $changeArray[0]['FileName']);
+		}//END IF
 		foreach ($changeArray as $index => $row) {
 			$plugin_version =	$plugins[reset( explode('/', $row['FilePath']) )];
 			//create rows for table
@@ -110,7 +114,7 @@ if (isset($infoArray) && count($infoArray) > 0) {
 	<?php require(PC_PLUGIN_ERROR_HANDLERS); ?>
 	<?php require(PC_PLUGIN_SUCCESS_HANDLERS); ?>
 	<h1>
-		Plugin Customizer<?php if (PC_DEBUG_MODE) require(PC_PLUGIN_DIR . PC_PLUGIN_DEBUG_DIR . 'debug_heading.php'); ?>
+		<?php echo get_admin_page_title(); ?><?php if (PC_DEBUG_MODE) require(PC_PLUGIN_DIR . PC_PLUGIN_DEBUG_DIR . 'debug_heading.php'); ?>
 	</h1>
 	<hr>
 	<h2>

@@ -319,19 +319,17 @@ switch (strtolower($pa)) {
 			break;
 		}//END IF
 		
-		$infoArraySrcFile =	PC_PLUGIN_DIR . 'includes/infoArray.php';
 		$changedFiles =	glob(PC_PLUGIN_DIR . PC_PLUGIN_DEBUG_DIR . 'changedFiles/*');
-		//echo_print_r($changedFiles);
 		$res =	array();
 		
-		if (file_exists(PC_PLUGIN_ARRAY_FILE)) {
-			$res[] =	unlink(PC_PLUGIN_ARRAY_FILE);
+		if (file_exists(PC_PLUGIN_DEBUG_ARRAY_FILE)) {
+			$res[] =	unlink(PC_PLUGIN_DEBUG_ARRAY_FILE);
 		}//END IF
-		if (file_exists(PC_PLUGIN_LOG_FILE)) {
-			$res[] =	unlink(PC_PLUGIN_LOG_FILE);
+		if (file_exists(PC_PLUGIN_DEBUG_LOG_FILE)) {
+			$res[] =	unlink(PC_PLUGIN_DEBUG_LOG_FILE);
 		}//END IF
 		
-		$res[] =	copy($infoArraySrcFile, PC_PLUGIN_ARRAY_FILE);
+		$res[] =	copy(PC_PLUGIN_LIVE_ARRAY_FILE, PC_PLUGIN_DEBUG_ARRAY_FILE);
 		foreach ($changedFiles as $filePath) {
 			if ($filePath == PC_PLUGIN_DIR . PC_PLUGIN_DEBUG_DIR . 'changedFiles/index.php') {
 				continue;

@@ -26,14 +26,14 @@ define( 'PC_PLUGIN_URL', plugins_url( '/', __FILE__ ) );
 define( 'PC_PLUGIN_ERROR_HANDLERS', PC_PLUGIN_DIR . 'pages/errorHandlers.php' );
 define( 'PC_PLUGIN_SUCCESS_HANDLERS', PC_PLUGIN_DIR . 'pages/successHandlers.php' );
 
-if (PC_DEBUG_MODE) {
-	define( 'PC_PLUGIN_ARRAY_FILE', PC_PLUGIN_DIR . PC_PLUGIN_DEBUG_DIR . 'infoArray.php' );
-	define( 'PC_PLUGIN_LOG_FILE', PC_PLUGIN_DIR . PC_PLUGIN_DEBUG_DIR . 'log.txt' );
-} else {
-	//if you change these locations, you will need to change them in the resetDebugFiles action too (only 1 line)
-	define( 'PC_PLUGIN_ARRAY_FILE', PC_PLUGIN_DIR . 'includes/infoArray.php' );
-	define( 'PC_PLUGIN_LOG_FILE', PC_PLUGIN_DIR . 'logs/log.txt' );
-}//END IF
+define( 'PC_PLUGIN_LIVE_ARRAY_FILE', PC_PLUGIN_DIR . 'includes/infoArray.php' );
+define( 'PC_PLUGIN_LIVE_LOG_FILE', PC_PLUGIN_DIR . 'logs/log.txt' );
+
+define( 'PC_PLUGIN_DEBUG_ARRAY_FILE', PC_PLUGIN_DIR . PC_PLUGIN_DEBUG_DIR . 'infoArray.php' );
+define( 'PC_PLUGIN_DEBUG_LOG_FILE', PC_PLUGIN_DIR . PC_PLUGIN_DEBUG_DIR . 'log.txt' );
+
+define( 'PC_PLUGIN_ARRAY_FILE', (PC_DEBUG_MODE ? PC_PLUGIN_DEBUG_ARRAY_FILE : PC_PLUGIN_LIVE_ARRAY_FILE) );
+define( 'PC_PLUGIN_LOG_FILE', (PC_DEBUG_MODE ? PC_PLUGIN_DEBUG_LOG_FILE : PC_PLUGIN_LIVE_LOG_FILE) );
 
 function plugin_customizer_plugin() {
 	

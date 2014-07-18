@@ -5,13 +5,8 @@ function pc_activate_plugin() {
 	$nL =	'
 ';
 	
-	//prevent writing to files in debug mode
-	if (PC_DEBUG_MODE) {
-		return false;
-	}//END IF
-	
-	if (! file_exists(PC_PLUGIN_ARRAY_FILE) ) {
-		$fp =	fopen(PC_PLUGIN_ARRAY_FILE, 'w');
+	if (! file_exists(PC_PLUGIN_LIVE_ARRAY_FILE) ) {
+		$fp =	fopen(PC_PLUGIN_LIVE_ARRAY_FILE, 'w');
 		fwrite($fp, "<?php" . $nL . "?>");
 		fclose($fp);
 	}//END IF
@@ -25,7 +20,9 @@ function pc_activate_plugin() {
 		}//END FOREACH LOOP
 	}//END IF
 	
-	require(PC_PLUGIN_ARRAY_FILE);
+	if (file_exists(PC_PLUGIN_LIVE_ARRAY_FILE))
+		require(PC_PLUGIN_LIVE_ARRAY_FILE);
+	
 	if (count($infoArray) > 0) {
 		foreach ($infoArray as $id => $customArray) {
 			
@@ -47,17 +44,6 @@ function pc_deactivate_plugin() {
 	$nL =	'
 ';
 	
-	//prevent writing to files in debug mode
-	if (PC_DEBUG_MODE) {
-		return false;
-	}//END IF
-	
-	if (! file_exists(PC_PLUGIN_ARRAY_FILE) ) {
-		$fp =	fopen(PC_PLUGIN_ARRAY_FILE, 'w');
-		fwrite($fp, "<?php" . $nL . "?>");
-		fclose($fp);
-	}//END IF
-	
 	$allPlugins =	get_plugins();
 	$plugins =	array();
 	if ( isset($allPlugins) && count($allPlugins) > 0 ) {
@@ -67,7 +53,9 @@ function pc_deactivate_plugin() {
 		}//END FOREACH LOOP
 	}//END IF
 	
-	require(PC_PLUGIN_ARRAY_FILE);
+	if (file_exists(PC_PLUGIN_LIVE_ARRAY_FILE))
+		require(PC_PLUGIN_LIVE_ARRAY_FILE);
+	
 	if (count($infoArray) > 0) {
 		foreach ($infoArray as $id => $customArray) {
 			

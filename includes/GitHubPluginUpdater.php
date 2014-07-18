@@ -162,9 +162,6 @@ class GitHubPluginUpdater {
 	
 	//since wordpress sucks at keeping custom files, we will do it ourselves!
 	public function preInstall( $true, $hook_extra ) {
-		if (PC_DEBUG_MODE) {
-			return new WP_Error('upgrade_failed', 'You can not upgrade this plugin while in debug mode.');
-		}//END IF
 		
 		// Get plugin information
 		$this->initPluginData();
@@ -172,11 +169,11 @@ class GitHubPluginUpdater {
 		
 		//we want to preserve our generated files (dont care about the debug ones)
 		global $wp_filesystem;
-		if (file_exists(PC_PLUGIN_ARRAY_FILE)) {
-			$wp_filesystem->copy(PC_PLUGIN_ARRAY_FILE, WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'pc_infoArray.php');
+		if (file_exists(PC_PLUGIN_LIVE_ARRAY_FILE)) {
+			$wp_filesystem->copy(PC_PLUGIN_LIVE_ARRAY_FILE, WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'pc_infoArray.php');
 		}//END IF
-		if (file_exists(PC_PLUGIN_LOG_FILE)) {
-			$wp_filesystem->copy(PC_PLUGIN_LOG_FILE, WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'pc_log.txt');
+		if (file_exists(PC_PLUGIN_LIVE_LOG_FILE)) {
+			$wp_filesystem->copy(PC_PLUGIN_LIVE_LOG_FILE, WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'pc_log.txt');
 		}//END IF
 		
 		return true;
@@ -187,9 +184,6 @@ class GitHubPluginUpdater {
 		// Get plugin information
 		$this->initPluginData();
 		
-		// Remember if our plugin was previously activated
-		//$wasActivated = is_plugin_active( $this->slug );
-		
 		// Since we are hosted in GitHub, our plugin folder would have a dirname of
 		// reponame-tagname change it to our original one:
 		global $wp_filesystem;
@@ -199,10 +193,10 @@ class GitHubPluginUpdater {
 		
 		//if we have files to move from old version, do it
 		if (file_exists(WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'pc_infoArray.php')) {
-			$wp_filesystem->move(WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'pc_infoArray.php', PC_PLUGIN_ARRAY_FILE);
+			$wp_filesystem->move(WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'pc_infoArray.php', PC_PLUGIN_LIVE_ARRAY_FILE);
 		}//END IF
 		if (file_exists(WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'pc_log.txt')) {
-			$wp_filesystem->move(WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'pc_log.txt', PC_PLUGIN_LOG_FILE);
+			$wp_filesystem->move(WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'pc_log.txt', PC_PLUGIN_LIVE_LOG_FILE);
 		}//END IF
 		
 		// Re-activate plugin if needed
