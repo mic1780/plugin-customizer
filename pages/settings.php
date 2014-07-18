@@ -26,9 +26,6 @@ if (PC_DEBUG_MODE && current_user_can('edit_plugins') === false ) {
 	<h2>
 		File Locations
 	</h2>
-	<h4>
-		Note: Debug mode uses different locations so changing some values will only effect live or debug mode.
-	</h4>
 	<table class="padCells">
 		<thead>
 			<tr>
@@ -40,12 +37,12 @@ if (PC_DEBUG_MODE && current_user_can('edit_plugins') === false ) {
 		<tbody>
 			<tr>
 				<td>Customizer File</td>
-				<td><?php echo str_replace(PC_PLUGIN_DIR, "", PC_PLUGIN_ARRAY_FILE); ?></td>
+				<td><?php echo str_replace(PC_PLUGIN_DIR, "", PC_PLUGIN_LIVE_ARRAY_FILE); ?></td>
 				<td>This file holds all of your plugin customizations.</td>
 			</tr>
 			<tr>
 				<td>Log File</td>
-				<td><?php echo str_replace(PC_PLUGIN_DIR, "", PC_PLUGIN_LOG_FILE); ?></td>
+				<td><?php echo str_replace(PC_PLUGIN_DIR, "", PC_PLUGIN_LIVE_LOG_FILE); ?></td>
 				<td>This file contains previous actions made by using this plugin.</td>
 			</tr>
 			<tr>
