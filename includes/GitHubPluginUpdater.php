@@ -13,6 +13,7 @@ class GitHubPluginUpdater {
 	private $username; // GitHub username
 	private $repo; // GitHub repo name
 	private $pluginFile; // __FILE__ of our plugin
+	private $pluginActive;
 	private $githubAPIResult; // holds data from GitHub
 	private $accessToken; // GitHub private repo token
 	
@@ -20,6 +21,7 @@ class GitHubPluginUpdater {
 		add_filter( "pre_set_site_transient_update_plugins", array( $this, "setTransitent" ) );
 		add_filter( "plugins_api", array( $this, "setPluginInfo" ), 10, 3 );
 		add_filter( "upgrader_post_install", array( $this, "postInstall" ), 10, 3 );
+		add_filter( "upgrader_pre_install", array( $this, "preInstall" ), 9, 2 );
 		
 		$this->pluginFile = $pluginFile;
 		$this->username = $gitHubUsername;
@@ -158,13 +160,35 @@ class GitHubPluginUpdater {
 		return $response;
 	}//END PUBLIC FUNCTION
 	
+	//since wordpress sucks at keeping custom files, we will do it ourselves!
+	public function preInstall( $true, $hook_extra ) {
+		if (PC_DEBUG_MODE) {
+			return new WP_Error('upgrade_failed', 'You can not upgrade this plugin while in debug mode.');
+		}//END IF
+		
+		// Get plugin information
+		$this->initPluginData();
+		$this->pluginActive =	is_plugin_active( $this->slug );
+		
+		//we want to preserve our generated files (dont care about the debug ones)
+		global $wp_filesystem;
+		if (file_exists(PC_PLUGIN_ARRAY_FILE)) {
+			$wp_filesystem->copy(PC_PLUGIN_ARRAY_FILE, WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'pc_infoArray.php');
+		}//END IF
+		if (file_exists(PC_PLUGIN_LOG_FILE)) {
+			$wp_filesystem->copy(PC_PLUGIN_LOG_FILE, WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'pc_log.txt');
+		}//END IF
+		
+		return true;
+	}//END PUBLIC FUNCTION
+	
 	// Perform additional actions to successfully install our plugin
 	public function postInstall( $true, $hook_extra, $result ) {
 		// Get plugin information
 		$this->initPluginData();
 		
 		// Remember if our plugin was previously activated
-		$wasActivated = is_plugin_active( $this->slug );
+		//$wasActivated = is_plugin_active( $this->slug );
 		
 		// Since we are hosted in GitHub, our plugin folder would have a dirname of
 		// reponame-tagname change it to our original one:
@@ -173,8 +197,16 @@ class GitHubPluginUpdater {
 		$wp_filesystem->move( $result['destination'], $pluginFolder );
 		$result['destination'] = $pluginFolder;
 		
+		//if we have files to move from old version, do it
+		if (file_exists(WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'pc_infoArray.php')) {
+			$wp_filesystem->move(WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'pc_infoArray.php', PC_PLUGIN_ARRAY_FILE);
+		}//END IF
+		if (file_exists(WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'pc_log.txt')) {
+			$wp_filesystem->move(WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'pc_log.txt', PC_PLUGIN_LOG_FILE);
+		}//END IF
+		
 		// Re-activate plugin if needed
-		if ( $wasActivated ) {
+		if ( $this->pluginActive ) {
 			//activate plugin without activation hook
 			$activate = activate_plugin( $this->slug, NULL, false, true );
 		}//END IF
