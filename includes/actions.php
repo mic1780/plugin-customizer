@@ -120,7 +120,9 @@ switch (strtolower($pa)) {
 		}//END IF
 		
 		//apply code changes here
-		$res =	pc_do_customization($infoArray[$id][$index], 'custom');
+		$res =	pc_do_customization($infoArray[$id][$index], 'custom', $thisArray);
+		$this->status =	$thisArray['status'];
+		$this->error =		$thisArray['error'];
 		if ($res === false) {
 			$infoArray[$id][$index]['Applied'] =	false;
 			$infoArray[$id][$index]['Version'] =	$version_holder;
@@ -178,7 +180,9 @@ switch (strtolower($pa)) {
 		}//END IF
 		
 		//reapply code here
-		$res =	pc_do_customization($infoArray[$id][$index], 'custom');
+		$res =	pc_do_customization($infoArray[$id][$index], 'custom', $thisArray);
+		$this->status =	$thisArray['status'];
+		$this->error =		$thisArray['error'];
 		if ($res === false) {
 			$infoArray[$id][$index]['Version'] =	$version_holder;
 			pc_generate_array_file($infoArray);
@@ -237,7 +241,9 @@ switch (strtolower($pa)) {
 		if (strcmp($infoArray[$id][$index]['Version'], $plugins[ reset( explode('/', $infoArray[$id][$index]['FilePath']) ) ]) >= 0) {
 			
 			//unapply code changes here
-			$res =	pc_do_customization($infoArray[$id][$index], 'original');
+			$res =	pc_do_customization($infoArray[$id][$index], 'original', $thisArray);
+			$this->status =	$thisArray['status'];
+			$this->error =		$thisArray['error'];
 			if ($res === false) {
 				$infoArray[$id][$index]['Applied'] =	true;
 				pc_generate_array_file($infoArray);

@@ -117,7 +117,7 @@ function pc_format_code($code, $rw) {
 //The author of this plugin is not responsible for any unwanted changes to your plugins.
 //If your site stops functioning due to the altering of this function, the author is free
 //of any compensation to the user. You have been warned.
-function pc_do_customization($info, $action) {
+function pc_do_customization($info, $action, &$array = array()) {
 	global $nL;
 	$new_content =	'';
 	
@@ -135,8 +135,8 @@ function pc_do_customization($info, $action) {
 			if (substr_count($old_content, $info['OldCode']) > 0) {
 				$new_content =	str_replace($info['OldCode'], $info['NewCode'], $old_content);
 			} else {
-				$this->status =	0;
-				$this->error =		"invalidCustomization";
+				$array['status'] =	0;
+				$array['error'] =		"invalidCustomization";
 				return false;
 			}//END IF
 			
@@ -145,15 +145,15 @@ function pc_do_customization($info, $action) {
 			$new_content =	str_replace($info['NewCode'], $info['OldCode'], $old_content);
 			
 		} else {
-			$this->status =	0;
-			$this->error =		"invalidArgument";
+			$array['status'] =	0;
+			$array['error'] =		"invalidArgument";
 			return false;
 		}//END IF
 		
 		$bytes =	file_put_contents( PC_PLUGIN_DIR . PC_PLUGIN_DEBUG_DIR . 'changedFiles/' . $info['FileName'], $new_content, LOCK_EX );
 		if ($bytes === false) {
-			$this->status =	0;
-			$this->error =		"customizationFailed";
+			$array['status'] =	0;
+			$array['error'] =		"customizationFailed";
 			return false;
 		}//END IF
 		
@@ -161,8 +161,8 @@ function pc_do_customization($info, $action) {
 		
 		$filePath =	dirname(PC_PLUGIN_DIR) . '/' . $info['FilePath'] . $info['FileName'];
 		if (! file_exists($filePath) ) {
-			$this->status =	0;
-			$this->error =		"missingPluginFile";
+			$array['status'] =	0;
+			$array['error'] =		"missingPluginFile";
 			return false;
 		}//END IF
 		
@@ -173,33 +173,35 @@ function pc_do_customization($info, $action) {
 			if (substr_count($old_content, $info['OldCode']) > 0) {
 				$new_content =	str_replace($info['OldCode'], $info['NewCode'], $old_content);
 			} else {
-				$this->status =	0;
-				$this->error =		"invalidCustomization";
+				$array['status'] =	0;
+				$array['error'] =		"invalidCustomization";
 				return false;
 			}//END IF
 		} else if (strtolower($action) === 'original') {
 			$new_content =	str_replace($info['NewCode'], $info['OldCode'], $old_content);
 		} else {
-			$this->status =	0;
-			$this->error =		"invalidArgument";
+			$array['status'] =	0;
+			$array['error'] =		"invalidArgument";
 			return false;
 		}//END IF
 		
 		if ($new_content === '') {
-			$this->status =	0;
-			$this->error =		"invalidCustomization";
+			$array['status'] =	0;
+			$array['error'] =		"invalidCustomization";
 			return false;
 		}//END IF
 		
 		$bytes =	file_put_contents( $filePath, $new_content, LOCK_EX );
 		if ($bytes === false) {
-			$this->status =	0;
-			$this->error =		"customizationFailed";
+			$array['status'] =	0;
+			$array['error'] =		"customizationFailed";
 			return false;
 		}//END IF
 		
 	}//END IF
 	
+	$array['status'] =	1;
+	$array['error'] =		"";
 	return true;
 }//END FUNCTION
 

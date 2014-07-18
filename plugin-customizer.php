@@ -37,6 +37,13 @@ if (PC_DEBUG_MODE) {
 
 function plugin_customizer_plugin() {
 	
+	if (file_exists(PC_PLUGIN_DIR . 'includes/classes/GitHubPluginUploader.php')) {
+		require_once( PC_PLUGIN_DIR . 'includes/classes/GitHubPluginUploader.php' );
+		if ( is_admin() ) {
+			new GitHubPluginUpdater( __FILE__, 'mic1780', "plugin-customizer" );
+		}//END IF
+	}//END IF
+	
 	if (! file_exists(PC_PLUGIN_DIR . 'includes/functions.php') ) {
 		exit('ERROR: Could not find Plugin Customizer function file: includes/functions.php');
 	}//END IF
