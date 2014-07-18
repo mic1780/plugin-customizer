@@ -37,8 +37,8 @@ if (PC_DEBUG_MODE) {
 
 function plugin_customizer_plugin() {
 	
-	if (file_exists(PC_PLUGIN_DIR . 'includes/classes/GitHubPluginUpdater.php')) {
-		require_once( PC_PLUGIN_DIR . 'includes/classes/GitHubPluginUpdater.php' );
+	if (file_exists(PC_PLUGIN_DIR . 'includes/GitHubPluginUpdater.php')) {
+		require_once( PC_PLUGIN_DIR . 'includes/GitHubPluginUpdater.php' );
 		if ( is_admin() ) {
 			new GitHubPluginUpdater( __FILE__, 'mic1780', "plugin-customizer" );
 		}//END IF
