@@ -1,4 +1,9 @@
 <?php
+if (! defined('PC_VERSION') ) {
+	header('Status: 403 Forbidden');
+	header('HTTP/1.1 403 Forbidden');
+	exit;
+}//END IF
 //Credit to tutsplus for most of this code
 //http://code.tutsplus.com/tutorials/distributing-your-plugins-in-github-with-automatic-updates--wp-34817
 class GitHubPluginUpdater {
@@ -170,7 +175,8 @@ class GitHubPluginUpdater {
 		
 		// Re-activate plugin if needed
 		if ( $wasActivated ) {
-			$activate = activate_plugin( $this->slug );
+			//activate plugin without activation hook
+			$activate = activate_plugin( $this->slug, NULL, false, true );
 		}//END IF
 		
 		return $result;
