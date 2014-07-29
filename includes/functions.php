@@ -14,7 +14,7 @@ function pc_get_tags_to_change() {
 	return array('script');
 }//END FUNCTION
 
-function getIDOptions() {
+function pc_getIDOptions() {
 	global	$nL;
 	
 	$return =	'';
@@ -32,7 +32,7 @@ function getIDOptions() {
 	return	$return;
 }//END FUNCTION
 
-function add_stylesheet( $hook = '', $name = '' ) {
+function pc_add_stylesheet( $hook = '', $name = '' ) {
 	$css_path =	'includes/css/';
 	
 	//do nothing with empty arguments
@@ -49,7 +49,7 @@ function add_stylesheet( $hook = '', $name = '' ) {
 	wp_enqueue_style( $hook );
 }//END FUNCTION
 
-function add_script( $hook = '', $name = '' ) {
+function pc_add_script( $hook = '', $name = '' ) {
 	$script_path =	'includes/js/';
 	
 	//do nothing with empty arguments
@@ -66,16 +66,18 @@ function add_script( $hook = '', $name = '' ) {
 	wp_enqueue_script( $hook );
 }//END FUNCTION
 
-function echo_print_r($array = array(), $return = false) {
-	$output =	'<pre>' . print_r($array, true) . '</pre>';
+if (! function_exists('echo_print_r') ) {
+	function echo_print_r($array = array(), $return = false) {
+		$output =	'<pre>' . print_r($array, true) . '</pre>';
+			
+		if ($return === false) {
+			echo	$output;
+		} else {
+			return	$output;
+		}//END IF
 		
-	if ($return === false) {
-		echo	$output;
-	} else {
-		return	$output;
-	}//END IF
-	
-}//END FUNCTION
+	}//END FUNCTION
+}//END IF
 
 /*
  * Code formatting function

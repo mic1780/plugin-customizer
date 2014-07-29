@@ -15,7 +15,8 @@ if (PC_DEBUG_MODE && current_user_can('edit_plugins') === false ) {
 	exit;
 }//END IF
 
-add_script('PC_general_settings', 'general_settings.js');
+pc_add_stylesheet('PC_stylesheet', 'style.css');
+pc_add_script('PC_general_settings', 'general_settings.js');
 
 $pluginsArray =	get_plugins();
 /**/
@@ -35,7 +36,7 @@ if (file_exists(PC_PLUGIN_ARRAY_FILE)) {
 }//END IF
 
 if (isset($infoArray) && count($infoArray) > 0) {
-	add_stylesheet('PC_settings_styles', 'settings_styles.css');
+	pc_add_stylesheet('PC_settings_styles', 'settings_styles.css');
 	foreach ($infoArray as $key => $changeArray) {
 		if (PC_DEBUG_MODE && file_exists(PC_PLUGIN_DIR . PC_PLUGIN_DEBUG_DIR . 'changedFiles/' . $changeArray[0]['FileName'])) {
 			$tempFile =	file_get_contents(PC_PLUGIN_DIR . PC_PLUGIN_DEBUG_DIR . 'changedFiles/' . $changeArray[0]['FileName']);
@@ -161,7 +162,7 @@ if (isset($infoArray) && count($infoArray) > 0) {
 				<tr>
 					<td class="vt">
 						<select name="newCustom[ID]" style="width: 50px;">
-							<?php echo getIDOptions(); ?>
+							<?php echo pc_getIDOptions(); ?>
 						</select>
 					</td>
 					<td class="vt">

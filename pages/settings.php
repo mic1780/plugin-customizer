@@ -15,6 +15,8 @@ if (PC_DEBUG_MODE && current_user_can('edit_plugins') === false ) {
 	exit;
 }//END IF
 
+pc_add_stylesheet('PC_stylesheet', 'style.css');
+
 ?>
 <div id="pc-admin">
 	<?php require(PC_PLUGIN_ERROR_HANDLERS); ?>

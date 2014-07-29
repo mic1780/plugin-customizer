@@ -89,8 +89,8 @@ if ($output === '') {
 	return;
 }//END IF
 
-add_stylesheet('PC_handler_styles', 'handler_styles.css');
-add_script('PC_handler_script', 'handler_script.js');
+pc_add_stylesheet('PC_handler_styles', 'handler_styles.css');
+pc_add_script('PC_handler_script', 'handler_script.js');
 ?>
 <div id="handlerContainer" class="dn">
 	<div id="errorText"><?php echo $output; ?></div>

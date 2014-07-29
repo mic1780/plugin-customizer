@@ -4,7 +4,7 @@
 	Plugin URI: https://github.com/mic1780/plugin-customizer
 	Description: This is a custom plugin that allows quick rewrites to active plugins (DO NOT DELETE OR CHANGE THIS)
 	Author: Michael Cummins
-	Version: 1.1.3
+	Version: 1.1.4
 	Author URI: https://github.com/mic1780/
 	Text Domain: 
  */
@@ -17,7 +17,7 @@ if( ! defined('ABSPATH') ) {
 define( 'PC_DEBUG_MODE', false );
 define( 'PC_PLUGIN_DEBUG_DIR', 'includes/debug/' );
 
-define( 'PC_VERSION', '1.1.3' );
+define( 'PC_VERSION', '1.1.4' );
 define( 'PC_PLUGIN_FILE', __FILE__ );
 define( 'PC_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PC_PLUGIN_URL', plugins_url( '/', __FILE__ ) );
@@ -37,10 +37,10 @@ define( 'PC_PLUGIN_LOG_FILE', (PC_DEBUG_MODE ? PC_PLUGIN_DEBUG_LOG_FILE : PC_PLU
 
 function plugin_customizer_plugin() {
 	
-	if (file_exists(PC_PLUGIN_DIR . 'includes/GitHubPluginUpdater.php')) {
-		require_once( PC_PLUGIN_DIR . 'includes/GitHubPluginUpdater.php' );
+	if (file_exists(PC_PLUGIN_DIR . 'includes/pcPluginUpdater.php')) {
+		require_once( PC_PLUGIN_DIR . 'includes/pcPluginUpdater.php' );
 		if ( is_admin() ) {
-			new GitHubPluginUpdater( __FILE__, 'mic1780', "plugin-customizer" );
+			new pcPluginUpdater( __FILE__, 'mic1780', "plugin-customizer" );
 		}//END IF
 	}//END IF
 	
@@ -48,8 +48,6 @@ function plugin_customizer_plugin() {
 		exit('ERROR: Could not find Plugin Customizer function file: includes/functions.php');
 	}//END IF
 	require_once (PC_PLUGIN_DIR . 'includes/functions.php');
-	
-	add_stylesheet('PC_stylesheet', 'style.css');
 	
 	// Only load the Admin class on admin requests, excluding AJAX.
 	if( is_admin() && ( false === defined( 'DOING_AJAX' ) || false === DOING_AJAX ) ) {

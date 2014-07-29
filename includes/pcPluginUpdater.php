@@ -6,7 +6,7 @@ if (! defined('PC_VERSION') ) {
 }//END IF
 //Credit to tutsplus for most of this code
 //http://code.tutsplus.com/tutorials/distributing-your-plugins-in-github-with-automatic-updates--wp-34817
-class GitHubPluginUpdater {
+class pcPluginUpdater {
 	
 	private $slug; // plugin slug
 	private $pluginData; // plugin data
@@ -19,7 +19,7 @@ class GitHubPluginUpdater {
 	
 	function __construct( $pluginFile, $gitHubUsername, $gitHubProjectName, $accessToken = '' ) {
 		add_filter( "pre_set_site_transient_update_plugins", array( $this, "setTransitent" ) );
-		add_filter( "plugins_api", array( $this, "setPluginInfo" ), 10, 3 );
+		add_filter( "plugins_api", array( $this, "setPluginInfo" ), 11, 3 );
 		add_filter( "upgrader_post_install", array( $this, "postInstall" ), 10, 3 );
 		add_filter( "upgrader_pre_install", array( $this, "preInstall" ), 9, 2 );
 		
@@ -32,7 +32,8 @@ class GitHubPluginUpdater {
 	// Get information regarding our plugin from WordPress
 	private function initPluginData() {
 		$this->slug = plugin_basename( $this->pluginFile );
-		$this->pluginData = get_plugin_data( $this->pluginFile );
+		if (file_exists($this->pluginFile))
+			$this->pluginData = get_plugin_data( $this->pluginFile );
 	}//END PRIVATE FUNCTION
 	
 	// Get information regarding our plugin from GitHub
@@ -65,13 +66,17 @@ class GitHubPluginUpdater {
 	// Push in plugin version information to get the update notification
 	public function setTransitent( $transient ) {
 		// If we have checked the plugin data before, don't re-check
-		if ( empty( $transient->checked ) ) {
+		if ( empty( $transient->checked ) || ! file_exists($this->pluginFile) ) {
 			return $transient;
 		}//END IF
 		
 		// Get plugin & GitHub release information
 		$this->initPluginData();
 		$this->getRepoReleaseInfo();
+		
+		if ( isset( $_GET['force-check'] ) && '1' === $_GET['force-check'] ) {
+			$transient->checked[$this->slug] = PC_VERSION;
+		}//END IF
 		
 		// Check the versions if we need to do an update
 		$doUpdate = version_compare( $this->githubAPIResult->tag_name, $transient->checked[$this->slug] );
@@ -111,6 +116,7 @@ class GitHubPluginUpdater {
 		$response->last_updated = $this->githubAPIResult->published_at;
 		$response->slug = $this->slug;
 		$response->plugin_name  = $this->pluginData["Name"];
+		$response->name  = $this->pluginData["Name"];
 		$response->version = $this->githubAPIResult->tag_name;
 		$response->author = $this->pluginData["AuthorName"];
 		$response->homepage = $this->pluginData["PluginURI"];
@@ -167,13 +173,18 @@ class GitHubPluginUpdater {
 		$this->initPluginData();
 		$this->pluginActive =	is_plugin_active( $this->slug );
 		
+		if ( isset($_GET['plugin']) && $_GET['plugin'] != $this->slug )
+			return true;
+		
 		//we want to preserve our generated files (dont care about the debug ones)
 		global $wp_filesystem;
+		$contentdir =	trailingslashit( $wp_filesystem->wp_content_dir() );
+		$wp_filesystem->mkdir( $contentdir . 'pc-temp' );
 		if (file_exists(PC_PLUGIN_LIVE_ARRAY_FILE)) {
-			$wp_filesystem->copy(PC_PLUGIN_LIVE_ARRAY_FILE, WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'pc_infoArray.php');
+			$wp_filesystem->copy( PC_PLUGIN_LIVE_ARRAY_FILE, $contentdir . 'pc-temp/' . end( explode('/', PC_PLUGIN_LIVE_ARRAY_FILE) ) );
 		}//END IF
 		if (file_exists(PC_PLUGIN_LIVE_LOG_FILE)) {
-			$wp_filesystem->copy(PC_PLUGIN_LIVE_LOG_FILE, WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'pc_log.txt');
+			$wp_filesystem->copy( PC_PLUGIN_LIVE_LOG_FILE, $contentdir . 'pc-temp/' . end( explode('/', PC_PLUGIN_LIVE_LOG_FILE) ) );
 		}//END IF
 		
 		return true;
@@ -184,6 +195,9 @@ class GitHubPluginUpdater {
 		// Get plugin information
 		$this->initPluginData();
 		
+		if ( isset($_GET['plugin']) && $_GET['plugin'] != $this->slug )
+			return $result;
+		
 		// Since we are hosted in GitHub, our plugin folder would have a dirname of
 		// reponame-tagname change it to our original one:
 		global $wp_filesystem;
@@ -191,12 +205,16 @@ class GitHubPluginUpdater {
 		$wp_filesystem->move( $result['destination'], $pluginFolder );
 		$result['destination'] = $pluginFolder;
 		
-		//if we have files to move from old version, do it
-		if (file_exists(WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'pc_infoArray.php')) {
-			$wp_filesystem->move(WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'pc_infoArray.php', PC_PLUGIN_LIVE_ARRAY_FILE);
-		}//END IF
-		if (file_exists(WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'pc_log.txt')) {
-			$wp_filesystem->move(WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'pc_log.txt', PC_PLUGIN_LIVE_LOG_FILE);
+		//move back our custom files
+		$contentdir =	trailingslashit( $wp_filesystem->wp_content_dir() );
+		if ( file_exists($contentdir . 'pc-temp') ) {
+			if ( file_exists( $contentdir . 'pc-temp/' . end( explode('/', PC_PLUGIN_LIVE_ARRAY_FILE) ) ) ) {
+				$wp_filesystem->move( $contentdir . 'pc-temp/' . end( explode('/', PC_PLUGIN_LIVE_ARRAY_FILE) ), PC_PLUGIN_LIVE_ARRAY_FILE );
+			}//END IF
+			if ( file_exists( $contentdir . 'pc-temp/' . end( explode('/', PC_PLUGIN_LIVE_LOG_FILE) ) ) ) {
+				$wp_filesystem->move( $contentdir . 'pc-temp/' . end( explode('/', PC_PLUGIN_LIVE_LOG_FILE) ), PC_PLUGIN_LIVE_LOG_FILE );
+			}//END IF
+			$wp_filesystem->rmdir( $contentdir . 'pc-temp' );
 		}//END IF
 		
 		// Re-activate plugin if needed
