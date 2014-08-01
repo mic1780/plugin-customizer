@@ -38,6 +38,8 @@ class pcPluginUpdater {
 	
 	// Get information regarding our plugin from GitHub
 	private function getRepoReleaseInfo() {
+		$nL = '
+';
 		// Only do this once
 		if ( ! empty( $this->githubAPIResult ) ) {
 			return;
@@ -51,15 +53,46 @@ class pcPluginUpdater {
 			$url = add_query_arg( array( "access_token" => $this->accessToken ), $url );
 		}//END IF
 		
+		if (file_exists(PC_PLUGIN_DIR . 'etag.txt')) {
+			list($etag, $version, $zipball) = explode($nL, file_get_contents(PC_PLUGIN_DIR . 'etag.txt'));
+		}//END IF
+		
 		// Get the results
-		$this->githubAPIResult = wp_remote_retrieve_body( wp_remote_get( $url ) );
+		if (isset($etag)) {
+			$this->githubAPIRequest = wp_remote_get( $url, array('headers' => array('If-None-Match' => $etag)) );
+		} else {
+			$this->githubAPIRequest = wp_remote_get( $url );
+		}//END IF
+		
+		$this->githubAPIHeaders =	wp_remote_retrieve_headers( $this->githubAPIRequest );
+		$this->githubAPIResult = wp_remote_retrieve_body( $this->githubAPIRequest );
+		
+		if (isset($etag)) {
+			if (wp_remote_retrieve_response_code($this->githubAPIRequest) == '304') {
+				$this->githubAPIResult->tag_name =	$version;
+				$this->githubAPIResult->zipball_url = $zipball;
+				$this->githubAPIResult->body =	file_get_contents(PC_PLUGIN_DIR . 'changes.txt');
+				return;
+			}//END IF
+		}//END IF
+		$etag =	$this->githubAPIHeaders['etag'];
+		
 		if ( ! empty( $this->githubAPIResult ) ) {
 			$this->githubAPIResult = @json_decode( $this->githubAPIResult );
 		}//END IF
 		
 		// Use only the latest release
 		if ( is_array( $this->githubAPIResult ) ) {
-			$this->githubAPIResult = $this->githubAPIResult[0];
+			$newestResult = $this->githubAPIResult[0];
+			for ($i=1; $i < count($this->githubAPIResult); $i++) {
+				if (version_compare( $this->githubAPIResult[$i]->tag_name, $newestResult->tag_name ) == 1)
+					$newestResult = $this->githubAPIResult[$i];
+			}
+			$this->githubAPIResult = $newestResult;
+			$version =	$this->githubAPIResult->tag_name;
+			$zipball =	$this->githubAPIResult->zipball_url;
+			file_put_contents(PC_PLUGIN_DIR . 'etag.txt', $etag . $nL . $version . $nL . $zipball, LOCK_EX);
+			file_put_contents(PC_PLUGIN_DIR . 'changes.txt', str_replace('\r\n', $nL, $this->githubAPIResult->body), LOCK_EX);
 		}//END IF
 	}//END PRIVATE FUNCTION
 	
@@ -180,6 +213,10 @@ class pcPluginUpdater {
 		global $wp_filesystem;
 		$contentdir =	trailingslashit( $wp_filesystem->wp_content_dir() );
 		$wp_filesystem->mkdir( $contentdir . 'pc-temp' );
+		if (file_exists(PC_PLUGIN_DIR . 'etag.txt'))
+			$wp_filesystem->copy(PC_PLUGIN_DIR . 'etag.txt', $contentdir . 'pc-temp/etag.txt');
+		if (file_exists(PC_PLUGIN_DIR . 'changes.txt'))
+			$wp_filesystem->copy(PC_PLUGIN_DIR . 'changes.txt', $contentdir . 'pc-temp/changes.txt');
 		if (file_exists(PC_PLUGIN_LIVE_ARRAY_FILE)) {
 			$wp_filesystem->copy( PC_PLUGIN_LIVE_ARRAY_FILE, $contentdir . 'pc-temp/' . end( explode('/', PC_PLUGIN_LIVE_ARRAY_FILE) ) );
 		}//END IF
@@ -208,6 +245,10 @@ class pcPluginUpdater {
 		//move back our custom files
 		$contentdir =	trailingslashit( $wp_filesystem->wp_content_dir() );
 		if ( file_exists($contentdir . 'pc-temp') ) {
+			if (file_exists($contentdir . 'pc-temp/etag.txt'))
+				$wp_filesystem->move( $contentdir . 'pc-temp/etag.txt', PC_PLUGIN_DIR . 'etag.txt' );
+			if (file_exists($contentdir . 'pc-temp/changes.txt'))
+				$wp_filesystem->move( $contentdir . 'pc-temp/changes.txt', PC_PLUGIN_DIR . 'changes.txt' );
 			if ( file_exists( $contentdir . 'pc-temp/' . end( explode('/', PC_PLUGIN_LIVE_ARRAY_FILE) ) ) ) {
 				$wp_filesystem->move( $contentdir . 'pc-temp/' . end( explode('/', PC_PLUGIN_LIVE_ARRAY_FILE) ), PC_PLUGIN_LIVE_ARRAY_FILE );
 			}//END IF

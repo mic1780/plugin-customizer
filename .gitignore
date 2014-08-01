@@ -1,3 +1,5 @@
 #ignore generated array file
 *infoArray.php
 *log*.txt
+etag.txt
+changes.txt
