@@ -130,7 +130,7 @@ function pc_do_customization($info, $action, &$array = array()) {
 		} else {
 			$old_content =	file_get_contents( dirname(PC_PLUGIN_DIR) . '/' . $info['FilePath'] . $info['FileName'] );
 		}//END IF
-		
+		$old_content =	preg_replace('/(\r\n|\r|\n)+?/', $nL, $old_content);
 		//we (should) have the contents of the file we want to change. now make changes
 		if (strtolower($action) === 'custom') {
 			
@@ -170,7 +170,7 @@ function pc_do_customization($info, $action, &$array = array()) {
 		
 		//retrieve file to change
 		$old_content =	file_get_contents( $filePath );
-		
+		$old_content =	preg_replace('/(\r\n|\r|\n)+?/', $nL, $old_content);
 		if (strtolower($action) === 'custom') {
 			if (substr_count($old_content, $info['OldCode']) > 0) {
 				$new_content =	str_replace($info['OldCode'], $info['NewCode'], $old_content);

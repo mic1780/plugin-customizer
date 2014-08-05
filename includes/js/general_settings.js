@@ -25,7 +25,9 @@ jQuery(function() {
 	});
 	
 	jQuery('[name="newCustom[NewCode]"], [name="newCustom[OldCode]"]').on('change', function(e) {
-		var regPatt =	/<(\/?)(?!')([^\n\r>]*)>/g;
+		var tagsToChange = Array('script','noscript');
+		var regexTagsToChange =	'(?=' + tagsToChange.join('|') + ')';
+		var regPatt = new RegExp("<(\\/?)(?!')" + regexTagsToChange + "([^\\n\\r>]*)>", "g");
 		var shouldReplace;
 		
 		if ( jQuery(this).val().search(regPatt) === -1 ) {

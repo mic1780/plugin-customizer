@@ -43,6 +43,7 @@ if (isset($infoArray) && count($infoArray) > 0) {
 		} else {
 			$tempFile =	file_get_contents(dirname(PC_PLUGIN_DIR) . '/' . $changeArray[0]['FilePath'] . $changeArray[0]['FileName']);
 		}//END IF
+		$tempFile =	preg_replace('/(\r\n|\r|\n)+?/', $nL, $tempFile);
 		foreach ($changeArray as $index => $row) {
 			$plugin_version =	$plugins[reset( explode('/', $row['FilePath']) )];
 			//create rows for table
