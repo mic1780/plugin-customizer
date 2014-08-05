@@ -302,6 +302,14 @@ switch (strtolower($pa)) {
 			$infoArray[$id][$i] =	$infoArray[$id][$i+1];
 		}//END FOR LOOP
 		unset($infoArray[$id][$elCount-1]);
+		if (count($infoArray[$id]) === 0) {
+			unset($infoArray[$id]);
+			$temp =	array();
+			foreach ($infoArray as $key => $customs)
+				$temp[] =	$customs;
+			$infoArray =	$temp;
+			unset($temp);
+		}//END IF
 		
 		
 		$res =	pc_generate_array_file($infoArray);
