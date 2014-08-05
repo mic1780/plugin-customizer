@@ -7,6 +7,11 @@ if (! defined('PC_VERSION') ) {
 	exit;
 }//END IF
 
+// Check if get_plugins() function exists. This is required on the front end of the
+// site, since it is in a file that is normally only loaded in the admin.
+if ( ! function_exists( 'get_plugins' ) ) {
+	require_once ABSPATH . 'wp-admin/includes/plugin.php';
+}
 $allPlugins =	get_plugins();
 $plugins =	array();
 if ( isset($allPlugins) && count($allPlugins) > 0 ) {
