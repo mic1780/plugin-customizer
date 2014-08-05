@@ -14,6 +14,8 @@ class pcPluginUpdater {
 	private $repo; // GitHub repo name
 	private $pluginFile; // __FILE__ of our plugin
 	private $pluginActive;
+	private $githubAPIRequest;
+	private $githubAPIHeaders;
 	private $githubAPIResult; // holds data from GitHub
 	private $accessToken; // GitHub private repo token
 	
@@ -71,7 +73,10 @@ class pcPluginUpdater {
 			if (wp_remote_retrieve_response_code($this->githubAPIRequest) == '304') {
 				$this->githubAPIResult->tag_name =	$version;
 				$this->githubAPIResult->zipball_url = $zipball;
-				$this->githubAPIResult->body =	file_get_contents(PC_PLUGIN_DIR . 'changes.txt');
+				if (file_exists(PC_PLUGIN_DIR . 'changes.txt'))
+					$this->githubAPIResult->body =	file_get_contents(PC_PLUGIN_DIR . 'changes.txt');
+				else
+					$this->githubAPIResult->body =	'Information not availible at this time. Sorry.' . $nL . $nL . 'tested: 3.9.1';
 				return;
 			}//END IF
 		}//END IF

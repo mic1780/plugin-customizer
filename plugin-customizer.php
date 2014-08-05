@@ -4,7 +4,7 @@
 	Plugin URI: https://github.com/mic1780/plugin-customizer
 	Description: This is a custom plugin that allows quick rewrites to active plugins.
 	Author: Michael Cummins
-	Version: 1.2.0
+	Version: 1.2.1
 	Author URI: https://github.com/mic1780/
 	Text Domain: 
  */
@@ -17,7 +17,7 @@ if( ! defined('ABSPATH') ) {
 define( 'PC_DEBUG_MODE', false );
 define( 'PC_PLUGIN_DEBUG_DIR', 'includes/debug/' );
 
-define( 'PC_VERSION', '1.2.0' );
+define( 'PC_VERSION', '1.2.1' );
 define( 'PC_PLUGIN_FILE', __FILE__ );
 define( 'PC_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PC_PLUGIN_URL', plugins_url( '/', __FILE__ ) );
@@ -37,13 +37,6 @@ define( 'PC_PLUGIN_LOG_FILE', (PC_DEBUG_MODE ? PC_PLUGIN_DEBUG_LOG_FILE : PC_PLU
 
 function plugin_customizer_plugin() {
 	
-	if (file_exists(PC_PLUGIN_DIR . 'includes/pcPluginUpdater.php')) {
-		require_once( PC_PLUGIN_DIR . 'includes/pcPluginUpdater.php' );
-		if ( is_admin() ) {
-			new pcPluginUpdater( __FILE__, 'mic1780', "plugin-customizer" );
-		}//END IF
-	}//END IF
-	
 	if (! file_exists(PC_PLUGIN_DIR . 'includes/functions.php') ) {
 		exit('ERROR: Could not find Plugin Customizer function file: includes/functions.php');
 	}//END IF
@@ -59,6 +52,7 @@ function plugin_customizer_plugin() {
 	
 }//END FUNCTION
 
+add_action('admin_init', 'pc_upgrade_check');
 add_action('plugins_loaded', 'plugin_customizer_plugin', 10);
 
 register_activation_hook( __FILE__, 'pc_install_hook');
@@ -74,6 +68,15 @@ function pc_uninstall_hook() {
 	require_once(PC_PLUGIN_DIR . 'includes/install.php');
 	if (function_exists('pc_deactivate_plugin')) {
 		pc_deactivate_plugin();
+	}//END IF
+}//END FUNCTION
+
+function pc_upgrade_check() {
+	if (file_exists(PC_PLUGIN_DIR . 'includes/pcPluginUpdater.php')) {
+		require_once( PC_PLUGIN_DIR . 'includes/pcPluginUpdater.php' );
+		if ( is_admin() ) {
+			new pcPluginUpdater( __FILE__, 'mic1780', "plugin-customizer" );
+		}//END IF
 	}//END IF
 }//END FUNCTION
 
